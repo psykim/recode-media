@@ -5,7 +5,9 @@ Served through GitHub Pages because the site builder (CreatorLink) does not acce
 
 | File | Used on |
 |---|---|
-| `film/recode-identity-2026-v5.mp4` | front page identity film v5 (77 s; stronger year acceleration, 2026-10-28) |
+| `film/recode-identity-2026-v6.mp4` | front page identity film v6 (60 s: v5 retimed ×77/60, same proportions, 2026-10-28) |
+| `film/recode-identity-2026-v6-poster.jpg` | its poster frame (the CI) |
+| `film/recode-identity-2026-v5.mp4` | v5, superseded — identity film v5 (77 s; stronger year acceleration, 2026-10-28) |
 | `film/recode-identity-2026-v5-poster.jpg` | its poster frame (the CI) |
 | `film/recode-identity-2026-v4.mp4` | v4, superseded — identity film v4 (77 s; v3 + year counter accelerates 2003→2026, 2026-10-28) |
 | `film/recode-identity-2026-v4-poster.jpg` | its poster frame (the CI) |
