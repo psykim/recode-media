@@ -36,6 +36,17 @@
       " listed in RECODE PAPERS</p><ol>" + rows + "</ol>" +
       (lim && ids.length > lim ? '<a class="rpb-all" href="/PAPERS">View all in PAPERS</a>' : "") + "</div>";
     foot.parentNode.insertBefore(s, foot);
+    keep(s);
+  }
+  // Blocks may arrive after the section on some loads: keep it right above the page bottom.
+  function keep(s) {
+    var body = s.parentNode;
+    function place() {
+      var foot = body.querySelector(":scope > .page-bottom") || body.querySelector(":scope > .el-footer");
+      if (foot && s.nextElementSibling !== foot) body.insertBefore(s, foot);
+    }
+    place();
+    if (window.MutationObserver) new MutationObserver(place).observe(body, { childList: true });
   }
   function go(data) {
     if (document.querySelector(".dsgn-body > .el-footer")) { render(data); return; }
