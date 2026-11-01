@@ -1,17 +1,12 @@
 /* recode-people-papers: MEMBERS/ALUMNI detail pages list the person's RECODE papers. ASCII only. */
 (function () {
-  var m = location.pathname.match(/^\/(MEMBERS|ALUMNI)\/view\/(\d+)/);
-  if (!m) return;
   var URL_ = "https://psykim.github.io/recode-media/people-papers.json";
-  var tries = 0;
+  var data = null, queued = false;
   function esc(s) { var d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
   function safe(u) { return /^https?:\/\//.test(u) ? u : "#"; }
-  function render(data) {
-    var ids = data.people[m[2]];
-    if (!ids || !ids.length || document.getElementById("recode-pubs")) return;
-    var foot = document.querySelector(".dsgn-body > .page-bottom") || document.querySelector(".dsgn-body > .el-footer");
-    if (!foot) return;
-    var lim = data.limit && data.limit[m[2]];
+  function bottom() { return document.querySelector(".dsgn-body > .page-bottom") || document.querySelector(".dsgn-body > .el-footer"); }
+  function build(id, ids) {
+    var lim = data.limit && data.limit[id];
     var shown = lim ? ids.slice(0, lim) : ids;
     var rows = shown.map(function (b) {
       var c = data.cards[b];
@@ -19,6 +14,7 @@
     }).join("");
     var s = document.createElement("section");
     s.id = "recode-pubs";
+    s.setAttribute("data-person", id);
     s.innerHTML = '<style>' +
       '#recode-pubs{background:#fff;color:#26343a;padding:8px 0 56px;font-family:Inter,"Noto Sans KR",system-ui,sans-serif}' +
       '#recode-pubs .rpb-in{max-width:1170px;margin:0 auto;padding:0 15px}' +
@@ -35,22 +31,26 @@
       (lim && ids.length > lim ? "Latest " + shown.length + " of " + ids.length + " papers" : ids.length + (ids.length === 1 ? " paper" : " papers")) +
       " listed in RECODE PAPERS</p><ol>" + rows + "</ol>" +
       (lim && ids.length > lim ? '<a class="rpb-all" href="/PAPERS">View all in PAPERS</a>' : "") + "</div>";
-    foot.parentNode.insertBefore(s, foot);
-    keep(s);
+    return s;
   }
-  // Blocks may arrive after the section on some loads: keep it right above the page bottom.
-  function keep(s) {
-    var body = s.parentNode;
-    function place() {
-      var foot = body.querySelector(":scope > .page-bottom") || body.querySelector(":scope > .el-footer");
-      if (foot && s.nextElementSibling !== foot) body.insertBefore(s, foot);
+  // PREV/NEXT swap the person without a page load, so the section follows the current path on every DOM change.
+  function sync() {
+    queued = false;
+    var m = location.pathname.match(/^\/(MEMBERS|ALUMNI)\/view\/(\d+)/);
+    var id = m && m[2], s = document.getElementById("recode-pubs");
+    if (s && s.getAttribute("data-person") !== id) { s.parentNode.removeChild(s); s = null; }
+    if (!id || !data) return;
+    var foot = bottom();
+    if (!foot) return;
+    if (!s) {
+      var ids = data.people[id];
+      if (!ids || !ids.length) return;
+      s = build(id, ids);
     }
-    place();
-    if (window.MutationObserver) new MutationObserver(place).observe(body, { childList: true });
+    if (s.nextElementSibling !== foot) foot.parentNode.insertBefore(s, foot);
   }
-  function go(data) {
-    if (document.querySelector(".dsgn-body > .el-footer")) { render(data); return; }
-    if (++tries < 40) setTimeout(function () { go(data); }, 250);
-  }
-  fetch(URL_).then(function (r) { return r.json(); }).then(go).catch(function () {});
+  function later() { if (!queued) { queued = true; setTimeout(sync, 30); } }
+  if (window.MutationObserver) new MutationObserver(later).observe(document.body, { childList: true, subtree: true });
+  window.addEventListener("popstate", later);
+  fetch(URL_).then(function (r) { return r.json(); }).then(function (d) { data = d; later(); }).catch(function () {});
 })();
